@@ -19,22 +19,26 @@ export default class UserBusiness {
     }
 
     async createUser(user: UserInputDTO) {
- 
+        
         const id = this.idGenerator.generate();
-
+        
         const hashPassword = await this.hashManager.hash(user.password);
 
-        const newUser: User = new User(
-            id, 
-            user.email, 
-            user.name, 
-            hashPassword, 
-            User.stringToUserRole(user.role)
-         )
+        const userInput = {
+            id: id, 
+            email: user.email, 
+            name: user.name, 
+            password: hashPassword, 
+            role: User.stringToUserRole(user.role)
+        }
+
+        const newUser = User.toUserModel(userInput)
 
         await this.userDatabase.createUser(newUser);
 
-        const accessToken = this.authenticator.generateToken({ id, role: user.role });
+        const tokenInput = {id: id, role: user.role}
+
+        const accessToken = this.authenticator.generateToken(tokenInput);
 
         return accessToken;
     }

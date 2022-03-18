@@ -11,16 +11,17 @@ export default class UserController {
     constructor() {}
 
     async signup(req: Request, res: Response) {
-
+        
+        try {
         const input: UserInputDTO = {
-            email: req.body.email,
             name: req.body.name,
+            email: req.body.email,
             password: req.body.password,
             role: req.body.role
         }
-        try {
-            const token = await userBusiness.getUserByEmail(input)
-
+        
+            const token = await userBusiness.createUser(input)
+            
             res.status(200).send({ token });
 
         } catch (error: any) {

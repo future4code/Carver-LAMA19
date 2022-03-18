@@ -1,5 +1,5 @@
 export abstract class BaseError extends Error {
-    constructor(message: string, public code: number) {
+    constructor(public code: number, message: string) {
       super(message);
     }
   }

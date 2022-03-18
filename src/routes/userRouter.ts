@@ -8,5 +8,7 @@ export const userRouter = express.Router();
 
 const userController = new UserController();
 
+console.log("router")
+
 userRouter.post("/signup", userController.signup);
 userRouter.post("/login", userController.login);
