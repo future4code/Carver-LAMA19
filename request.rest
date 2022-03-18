@@ -1,0 +1,28 @@
+POST http://localhost:3000/user/signup
+Content-Type: application/json
+
+{
+    "name": "Astrodev",
+    "email": "astrodev@lbn.com",
+    "password": "123456",
+    "role": "NORMAL"
+}
+### Signup 2
+POST http://localhost:3000/user/signup
+Content-Type: application/json
+
+{
+    "name": "Astrodev3",
+    "email": "astrodev3@lbn.com",
+    "password": "123456",
+    "role": "NORMAL"
+}
+
+### LOGIN
+POST http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "email": "astrodev@lbn.com",
+    "password": "123456"
+}
