@@ -1,38 +1,51 @@
-import { UserInputDTO, LoginInputDTO } from "../model/User";
-import { UserDatabase } from "../data/UserDatabase";
+import { UserInputDTO, LoginInputDTO, User } from "../model/User";
 import { IdGenerator } from "../services/IdGenerator";
 import { HashManager } from "../services/HashManager";
 import { Authenticator } from "../services/Authenticator";
+import UserRepository from "./UserRepository";
 
-export class UserBusiness {
+export default class UserBusiness {
+    private userDatabase: UserRepository
+    private idGenerator: IdGenerator
+    private hashManager: HashManager
+    private authenticator: Authenticator
+    
+
+    constructor(userImplementation: UserRepository){
+        this.userDatabase = userImplementation
+        this.idGenerator = new IdGenerator()
+        this.hashManager = new HashManager()
+        this.authenticator = new Authenticator()
+    }
 
     async createUser(user: UserInputDTO) {
+ 
+        const id = this.idGenerator.generate();
 
-        const idGenerator = new IdGenerator();
-        const id = idGenerator.generate();
+        const hashPassword = await this.hashManager.hash(user.password);
 
-        const hashManager = new HashManager();
-        const hashPassword = await hashManager.hash(user.password);
+        const newUser: User = new User(
+            id, 
+            user.email, 
+            user.name, 
+            hashPassword, 
+            User.stringToUserRole(user.role)
+         )
 
-        const userDatabase = new UserDatabase();
-        await userDatabase.createUser(id, user.email, user.name, hashPassword, user.role);
+        await this.userDatabase.createUser(newUser);
 
-        const authenticator = new Authenticator();
-        const accessToken = authenticator.generateToken({ id, role: user.role });
+        const accessToken = this.authenticator.generateToken({ id, role: user.role });
 
         return accessToken;
     }
 
     async getUserByEmail(user: LoginInputDTO) {
 
-        const userDatabase = new UserDatabase();
-        const userFromDB = await userDatabase.getUserByEmail(user.email);
+        const userFromDB = await this.userDatabase.getUserByEmail(user.email);
 
-        const hashManager = new HashManager();
-        const hashCompare = await hashManager.compare(user.password, userFromDB.getPassword());
+        const hashCompare = await this.hashManager.compare(user.password, userFromDB.getPassword());
 
-        const authenticator = new Authenticator();
-        const accessToken = authenticator.generateToken({ id: userFromDB.getId(), role: userFromDB.getRole() });
+        const accessToken = this.authenticator.generateToken({ id: userFromDB.getId(), role: userFromDB.getRole() });
 
         if (!hashCompare) {
             throw new Error("Invalid Password!");

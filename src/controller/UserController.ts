@@ -1,25 +1,29 @@
 import { Request, Response } from "express";
-import { UserInputDTO, LoginInputDTO} from "../model/User";
-import { UserBusiness } from "../business/UserBusiness";
+import { UserInputDTO, LoginInputDTO } from "../model/User";
+import UserBusiness from "../business/UserBusiness";
 import { BaseDatabase } from "../data/BaseDatabase";
+import UserDatabase from "../data/UserDatabase";
 
-export class UserController {
+const userBusiness = new UserBusiness(new UserDatabase())
+
+export default class UserController {
+    
+    constructor() {}
+
     async signup(req: Request, res: Response) {
+
+        const input: UserInputDTO = {
+            email: req.body.email,
+            name: req.body.name,
+            password: req.body.password,
+            role: req.body.role
+        }
         try {
-
-            const input: UserInputDTO = {
-                email: req.body.email,
-                name: req.body.name,
-                password: req.body.password,
-                role: req.body.role
-            }
-
-            const userBusiness = new UserBusiness();
-            const token = await userBusiness.createUser(input);
+            const token = await userBusiness.getUserByEmail(input)
 
             res.status(200).send({ token });
 
-        } catch (error) {
+        } catch (error: any) {
             res.status(400).send({ error: error.message });
         }
 
@@ -35,12 +39,11 @@ export class UserController {
                 password: req.body.password
             };
 
-            const userBusiness = new UserBusiness();
-            const token = await userBusiness.getUserByEmail(loginData);
+            const token = await userBusiness.getUserByEmail(loginData)
 
             res.status(200).send({ token });
 
-        } catch (error) {
+        } catch (error: any) {
             res.status(400).send({ error: error.message });
         }
 

@@ -1,29 +1,25 @@
 import { BaseDatabase } from "./BaseDatabase";
 import { User } from "../model/User";
 import Knex from "knex";
+import UserRepository from "../business/UserRepository";
 
-export class UserDatabase extends BaseDatabase {
+export default class UserDatabase extends BaseDatabase implements UserRepository {
 
-  private static TABLE_NAME = "";
+  private static TABLE_NAME = "NOME_TABELAS_USUÁRIOS";
  
-  public async createUser(
-    id: string,
-    email: string,
-    name: string,
-    password: string,
-    role: string
-  ): Promise<void> {
+  public async createUser(user: User): Promise<User> {
     try {
       await this.getConnection()
         .insert({
-          id,
-          email,
-          name,
-          password,
-          role
+          id: user.getId(),
+          email: user.getEmail(),
+          name: user.getName(),
+          password: user.getPassword(),
+          role: user.getRole()
         })
         .into(UserDatabase.TABLE_NAME);
-    } catch (error) {
+        return user
+    } catch (error: any) {
       throw new Error(error.sqlMessage || error.message);
     }
   }
