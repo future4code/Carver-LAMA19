@@ -1,8 +1,8 @@
-import { BaseError } from "./BaseError";
+export class CustomError extends Error {
 
-export class CustomError extends BaseError {
-
-    constructor(code: number, message: string) {
-        super(code, message);
+    constructor(public statusCode: number, message: string) {
+        
+        super(message)
+       
     }
 } 
