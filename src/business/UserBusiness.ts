@@ -3,15 +3,16 @@ import { IdGenerator } from "../services/IdGenerator";
 import { HashManager } from "../services/HashManager";
 import { Authenticator } from "../services/Authenticator";
 import UserRepository from "./UserRepository";
+import { CustomError } from "../error/CustomError";
 
 export default class UserBusiness {
     private userDatabase: UserRepository
     private idGenerator: IdGenerator
     private hashManager: HashManager
     private authenticator: Authenticator
-    
 
-    constructor(userImplementation: UserRepository){
+
+    constructor(userImplementation: UserRepository) {
         this.userDatabase = userImplementation
         this.idGenerator = new IdGenerator()
         this.hashManager = new HashManager()
@@ -19,37 +20,59 @@ export default class UserBusiness {
     }
 
     async createUser(user: UserInputDTO) {
- 
-        const id = this.idGenerator.generate();
+        try {
+            if (!user.name || !user.email || !user.password || !user.role) {
 
-        const hashPassword = await this.hashManager.hash(user.password);
+                throw new CustomError(422, "Missing input");
+            }
+            const id = this.idGenerator.generate();
 
-        const newUser: User = new User(
-            id, 
-            user.email, 
-            user.name, 
-            hashPassword, 
-            User.stringToUserRole(user.role)
-         )
+            const hashPassword = await this.hashManager.hash(user.password);
 
-        await this.userDatabase.createUser(newUser);
+            const userInput = {
+                id: id,
+                email: user.email,
+                name: user.name,
+                password: hashPassword,
+                role: User.stringToUserRole(user.role)
+            }
 
-        const accessToken = this.authenticator.generateToken({ id, role: user.role });
+            const newUser = User.toUserModel(userInput)
 
-        return accessToken;
+            await this.userDatabase.createUser(newUser);
+
+            const tokenInput = { id: id, role: user.role }
+
+            const accessToken = this.authenticator.generateToken(tokenInput);
+
+            return accessToken;
+        } catch (error: any) {
+            throw new CustomError(error.statusCode, error.message)
+        }
     }
+
 
     async getUserByEmail(user: LoginInputDTO) {
 
+        if (!user.email || !user.password) {
+            throw new CustomError(422, "Missing input");
+        }
+
         const userFromDB = await this.userDatabase.getUserByEmail(user.email);
+
+        if (!userFromDB) {
+            throw new CustomError(401, "Invalid credentials");
+        }
 
         const hashCompare = await this.hashManager.compare(user.password, userFromDB.getPassword());
 
+        if (!hashCompare) {
+            throw new CustomError(401, "Invalid Password!");
+        }
+
         const accessToken = this.authenticator.generateToken({ id: userFromDB.getId(), role: userFromDB.getRole() });
 
-        if (!hashCompare) {
-            throw new Error("Invalid Password!");
-        }
+        
 
         return accessToken;
     }
