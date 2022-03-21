@@ -54,15 +54,25 @@ export default class UserBusiness {
 
     async getUserByEmail(user: LoginInputDTO) {
 
+        if (!user.email || !user.password) {
+            throw new CustomError(422, "Missing input");
+        }
+
         const userFromDB = await this.userDatabase.getUserByEmail(user.email);
+
+        if (!userFromDB) {
+            throw new CustomError(401, "Invalid credentials");
+        }
 
         const hashCompare = await this.hashManager.compare(user.password, userFromDB.getPassword());
 
+        if (!hashCompare) {
+            throw new CustomError(401, "Invalid Password!");
+        }
+
         const accessToken = this.authenticator.generateToken({ id: userFromDB.getId(), role: userFromDB.getRole() });
 
-        if (!hashCompare) {
-            throw new Error("Invalid Password!");
-        }
+        
 
         return accessToken;
     }
