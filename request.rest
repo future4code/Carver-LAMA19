@@ -1,0 +1,45 @@
+### Signup
+POST http://localhost:3000/user/signup
+Content-Type: application/json
+
+{
+    "name": "",
+    "email": "astrodevAdmin@lbn.com",
+    "password": "123456",
+    "role": "ADMIN"
+}
+### Signup 2
+POST http://localhost:3000/user/signup
+Content-Type: application/json
+
+{
+    "name": "Astrodev3",
+    "email": "astrodev3@lbn.com",
+    "password": "123456",
+    "role": "NORMAL"
+}
+
+### LOGIN
+POST http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "email": "astrodevAdmin@lbn.com",
+    "password": "123456"
+}
+
+### CRIAR BANDA
+POST http://localhost:3000/band/create
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMzNTc1MmUzLWNkN2EtNGZjNy04YThjLTI5OGUyZjlmOTY4NSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTY0NzYzNTA4MSwiZXhwIjoxNjQ3NjM2ODgxfQ.9ysaukHQkApRxMAuPkCyYvp8tVe-Szac9fKIVsVPnSM
+Content-Type: application/json
+
+{
+    "name": "Rise Against",
+    "music_genre": "Melodic Hardcore",
+    "responsible": "Tim"
+}
+
+### PEGAR BANDAS
+GET http://localhost:3000/band/find?name=Rise Against
+Content-Type: application/json
+
